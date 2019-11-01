@@ -44,9 +44,9 @@
  */
 lv_obj_t * lv_qrcode_create(lv_obj_t * parent, lv_coord_t size, lv_color_t dark_color, lv_color_t light_color)
 {
-   uint32_t buf_size = LV_IMG_BUF_SIZE_INDEXED_1BIT(size, size);
+   uint32_t buf_size = LV_CANVAS_BUF_SIZE_INDEXED_1BIT(size, size);
    uint8_t * buf = lv_mem_alloc(buf_size);
-   LV_ASSERT_MEM(buf);
+   lv_mem_assert(buf);
    if(buf == NULL) return NULL;
 
    lv_obj_t * canvas = lv_canvas_create(parent, NULL);
