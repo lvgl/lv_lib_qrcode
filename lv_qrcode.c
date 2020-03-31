@@ -46,7 +46,7 @@ lv_obj_t * lv_qrcode_create(lv_obj_t * parent, lv_coord_t size, lv_color_t dark_
 {
    uint32_t buf_size = LV_CANVAS_BUF_SIZE_INDEXED_1BIT(size, size);
    uint8_t * buf = lv_mem_alloc(buf_size);
-#if LV_VERSION_CHECK(7,0,0)
+#if LV_VERSION_CHECK(6,0,0)
    LV_ASSERT_MEM(buf);
 #else
    lv_mem_assert(buf);
