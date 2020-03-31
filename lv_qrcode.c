@@ -100,12 +100,54 @@ lv_res_t lv_qrcode_update(lv_obj_t * qrcode, const void * data, uint32_t data_le
     int scale = obj_w / qr_size;
     int scaled = qr_size * scale;
     int margin = (obj_w - scaled) / 2;
+    lv_img_dsc_t * img = lv_canvas_get_img(qrcode);
+    uint8_t * buf_u8 = (uint8_t *)img->data + 8;    /*+8 skip the palette*/
 
-    for (int y = 0; y < scaled; y++) {
-        for (int x = 0; x < scaled; x++) {
-            c.full = qrcodegen_getModule(qr0, x / scale, y / scale) ? 0 : 1;
-            lv_canvas_set_px(qrcode, x + margin, y + margin, c);
+    /* Copy the qr code canvas:
+     * A simple `lv_canvas_set_px` would work but it's slow for so many pixels.
+     * So buffer 1 byte (8 px) from the qr code and set it in the canvas image */
+    uint32_t row_byte_cnt = (img->header.w + 7) >> 3;
+    int y;
+    for (y = margin; y < scaled + margin; y+=scale) {
+        uint8_t b = 0;
+        uint8_t p = 0;
+        bool aligned = false;
+        int x;
+        for (x = margin; x < scaled + margin; x++) {
+            bool a = qrcodegen_getModule(qr0, (x - margin) / scale, (y - margin) / scale);
+
+            if(aligned == false && (x & 0x7) == 0) aligned = true;
+
+            if(aligned == false) {
+                c.full = a ? 0 : 1;
+                lv_canvas_set_px(qrcode, x, y, c);
+            } else {
+                if(!a) b |= (1 << (7 - p));
+                p++;
+                if(p == 8) {
+                    uint32_t px = row_byte_cnt * y + (x >> 3);
+                    buf_u8[px] = b;
+                    b = 0;
+                    p = 0;
+                }
+            }
         }
+
+        /*Process the last byte of the row*/
+        if(p) {
+            /*Make the rest of the bits white*/
+            b |= (1 << (8 - p)) - 1;
+
+            uint32_t px = row_byte_cnt * y + (x >> 3);
+            buf_u8[px] = b;
+        }
+
+      /*The Qr is probably scaled so simply to the repeated rows*/
+      uint32_t s;
+      const uint8_t * row_ori = buf_u8 + row_byte_cnt * y;
+      for(s = 1; s < scale; s++) {
+          lv_memcpy((uint8_t*)buf_u8 + row_byte_cnt * (y + s), row_ori, row_byte_cnt);
+      }
     }
 
     return LV_RES_OK;
