@@ -146,7 +146,7 @@ lv_res_t lv_qrcode_update(lv_obj_t * qrcode, const void * data, uint32_t data_le
       uint32_t s;
       const uint8_t * row_ori = buf_u8 + row_byte_cnt * y;
       for(s = 1; s < scale; s++) {
-          _lv_memcpy((uint8_t*)buf_u8 + row_byte_cnt * (y + s), row_ori, row_byte_cnt);
+          memcpy((uint8_t*)buf_u8 + row_byte_cnt * (y + s), row_ori, row_byte_cnt);
       }
     }
 
