@@ -1,5 +1,6 @@
-# lv_lib_qrcode
-QR code generation with LittlevGL. Uses [QR-Code-generator](https://github.com/nayuki/QR-Code-generator) by [nayuki](https://github.com/nayuki).
+# QR code library for LVGL
+
+QR code generation with LVGL. Uses [QR-Code-generator](https://github.com/nayuki/QR-Code-generator) by [nayuki](https://github.com/nayuki).
 
 ## Get started
 - Download or clone this repository
