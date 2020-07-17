@@ -5,7 +5,7 @@ QR code generation with LittlevGL. Uses [QR-Code-generator](https://github.com/n
 - Download or clone this repository
   - [Download](https://github.com/littlevgl/lv_lib_qrcode.git) from GitHub
   - Clone: git clone https://github.com/littlevgl/lv_lib_qrcode.git
-- Include the library: #include "lv_lib_qrcode/lv_qrcode.h"
+- Include the library: `#include "lv_lib_qrcode/lv_qrcode.h"`
 - Test with the following code:
 ```c
 const char * data = "Hello world";
