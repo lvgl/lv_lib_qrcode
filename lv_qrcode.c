@@ -46,14 +46,10 @@ lv_obj_t * lv_qrcode_create(lv_obj_t * parent, lv_coord_t size, lv_color_t dark_
 {
    uint32_t buf_size = LV_CANVAS_BUF_SIZE_INDEXED_1BIT(size, size);
    uint8_t * buf = lv_mem_alloc(buf_size);
-#if LV_VERSION_CHECK(6,0,0)
-   lv_mem_assert(buf);
-#else
-   LV_ASSERT_MEM(buf);
-#endif
+   LV_ASSERT_MALLOC(buf);
    if(buf == NULL) return NULL;
 
-   lv_obj_t * canvas = lv_canvas_create(parent, NULL);
+   lv_obj_t * canvas = lv_canvas_create(parent);
    if(canvas == NULL) return NULL;
 
    lv_canvas_set_buffer(canvas, buf, size, size, LV_IMG_CF_INDEXED_1BIT);
@@ -75,11 +71,7 @@ lv_res_t lv_qrcode_update(lv_obj_t * qrcode, const void * data, uint32_t data_le
 {
     lv_color_t c;
     c.full = 1;
-#if LV_VERSION_CHECK(7,0,0)
     lv_canvas_fill_bg(qrcode, c, LV_OPA_COVER);
-#else
-    lv_canvas_fill_bg(qrcode, c);
-#endif
 
     if(data_len > qrcodegen_BUFFER_LEN_MAX) return LV_RES_INV;
 
@@ -95,18 +87,18 @@ lv_res_t lv_qrcode_update(lv_obj_t * qrcode, const void * data, uint32_t data_le
     if (!ok) return LV_RES_INV;
 
 
-    lv_coord_t obj_w = lv_obj_get_width(qrcode);
+    lv_img_dsc_t * imgdsc = lv_canvas_get_img(qrcode);
+    lv_coord_t obj_w = imgdsc->header.w;
     int qr_size = qrcodegen_getSize(qr0);
     int scale = obj_w / qr_size;
     int scaled = qr_size * scale;
     int margin = (obj_w - scaled) / 2;
-    lv_img_dsc_t * img = lv_canvas_get_img(qrcode);
-    uint8_t * buf_u8 = (uint8_t *)img->data + 8;    /*+8 skip the palette*/
+    uint8_t * buf_u8 = (uint8_t *)imgdsc->data + 8;    /*+8 skip the palette*/
 
     /* Copy the qr code canvas:
      * A simple `lv_canvas_set_px` would work but it's slow for so many pixels.
      * So buffer 1 byte (8 px) from the qr code and set it in the canvas image */
-    uint32_t row_byte_cnt = (img->header.w + 7) >> 3;
+    uint32_t row_byte_cnt = (imgdsc->header.w + 7) >> 3;
     int y;
     for (y = margin; y < scaled + margin; y+=scale) {
         uint8_t b = 0;
@@ -143,7 +135,7 @@ lv_res_t lv_qrcode_update(lv_obj_t * qrcode, const void * data, uint32_t data_le
         }
 
       /*The Qr is probably scaled so simply to the repeated rows*/
-      uint32_t s;
+      int s;
       const uint8_t * row_ori = buf_u8 + row_byte_cnt * y;
       for(s = 1; s < scale; s++) {
           memcpy((uint8_t*)buf_u8 + row_byte_cnt * (y + s), row_ori, row_byte_cnt);
