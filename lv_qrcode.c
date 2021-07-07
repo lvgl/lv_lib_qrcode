@@ -38,13 +38,14 @@
  * Create an empty QR code (an `lv_canvas`) object.
  * @param parent point to an object where to create the QR code
  * @param size width and height of the QR code
+ * @param cpad blank area around the QR code
  * @param dark_color dark color of the QR code
  * @param light_color light color of the QR code
  * @return pointer to the created QR code object
  */
-lv_obj_t * lv_qrcode_create(lv_obj_t * parent, lv_coord_t size, lv_color_t dark_color, lv_color_t light_color)
+lv_obj_t * lv_qrcode_create(lv_obj_t * parent, lv_coord_t size, lv_coord_t cpad, lv_color_t dark_color, lv_color_t light_color)
 {
-   uint32_t buf_size = LV_CANVAS_BUF_SIZE_INDEXED_1BIT(size, size);
+   uint32_t buf_size = LV_CANVAS_BUF_SIZE_INDEXED_1BIT(size + cpad * 2, size + cpad * 2);
    uint8_t * buf = lv_mem_alloc(buf_size);
 #if LV_VERSION_CHECK(6,0,0)
    lv_mem_assert(buf);
@@ -56,7 +57,7 @@ lv_obj_t * lv_qrcode_create(lv_obj_t * parent, lv_coord_t size, lv_color_t dark_
    lv_obj_t * canvas = lv_canvas_create(parent, NULL);
    if(canvas == NULL) return NULL;
 
-   lv_canvas_set_buffer(canvas, buf, size, size, LV_IMG_CF_INDEXED_1BIT);
+   lv_canvas_set_buffer(canvas, buf, size + cpad * 2, size + cpad * 2, LV_IMG_CF_INDEXED_1BIT);
    lv_canvas_set_palette(canvas, 0, dark_color);
    lv_canvas_set_palette(canvas, 1, light_color);
 
@@ -67,11 +68,12 @@ lv_obj_t * lv_qrcode_create(lv_obj_t * parent, lv_coord_t size, lv_color_t dark_
 /**
  * Set the data of a QR code object
  * @param qrcode pointer to aQ code object
+ * @param cpad blank area around the QR code
  * @param data data to display
  * @param data_len length of data in bytes
  * @return LV_RES_OK: if no error; LV_RES_INV: on error
  */
-lv_res_t lv_qrcode_update(lv_obj_t * qrcode, const void * data, uint32_t data_len)
+lv_res_t lv_qrcode_update(lv_obj_t * qrcode, lv_coord_t cpad, const void * data, uint32_t data_len)
 {
     lv_color_t c;
     c.full = 1;
@@ -95,11 +97,12 @@ lv_res_t lv_qrcode_update(lv_obj_t * qrcode, const void * data, uint32_t data_le
     if (!ok) return LV_RES_INV;
 
 
-    lv_coord_t obj_w = lv_obj_get_width(qrcode);
+    // Accommodate the addition of a cpad (colour pad) margin
+    lv_coord_t obj_w = lv_obj_get_width(qrcode) - cpad * 2;
     int qr_size = qrcodegen_getSize(qr0);
     int scale = obj_w / qr_size;
     int scaled = qr_size * scale;
-    int margin = (obj_w - scaled) / 2;
+    int margin = (obj_w - scaled) / 2 + cpad;
     lv_img_dsc_t * img = lv_canvas_get_img(qrcode);
     uint8_t * buf_u8 = (uint8_t *)img->data + 8;    /*+8 skip the palette*/
 
