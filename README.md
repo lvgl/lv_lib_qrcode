@@ -1,5 +1,8 @@
 # QR code library for LVGL
 
+**This repository is merged into the lvgl repository. See https://docs.lvgl.io/master/libs/qrcode.html**
+
+
 QR code generation with LVGL. Uses [QR-Code-generator](https://github.com/nayuki/QR-Code-generator) by [nayuki](https://github.com/nayuki).
 
 ## Get started
